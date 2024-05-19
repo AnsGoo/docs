@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitepress'
-
+const isProd = process.env.npm_lifecycle_event==='docs:build'
+const base = isProd ? "/docs/":"/"
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "OpenDataV",
@@ -31,5 +32,6 @@ export default defineConfig({
     socialLinks: [
       { icon: 'github', link: 'https://github.com/AnsGoo/openDataV' }
     ]
-  }
+  },
+  base
 })
