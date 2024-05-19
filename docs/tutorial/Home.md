@@ -19,6 +19,7 @@
 
 🎃OpenDataV 是一个纯前端的`拖拽式`、`可视化`、`低代码`数据可视化 🌈 开发平台，你可以用它自由的拼接成各种 ✨ 炫酷的大屏，同时支持用户方便的开发自己的组件并接入平台。
 
+
 ## 体验
 
 🧙国外：[http://datav.byteportrait.com/](http://datav.byteportrait.com/)
@@ -38,6 +39,19 @@ gitee 仅做代码同步，issues 或者 PR 请在 github 提交。
 
 目前该项目在不断的完善中，🎉 欢迎 issuer,🌹 欢迎 start, 🎨 欢迎 commit, 🚀 欢迎 use...，💪 欢迎一切技术交流活动
 
+## 最小化使用
+
+为了便于大家方便继承，我们将核心功能封装成NPM组件包，方便大家使用
+
+|npm包| 名称       | 用途                                             |
+|--|----------|------------------------------------------------|
+|@open-data-v/base| 基础公共包    | open-data-v 公共基础包                              |
+|@open-data-v/designer| 页面设计器组件包 | 给open-data-v 提供页面编辑和预览能力                       |
+|@open-data-v/scripts| 数据处理基础包  | 给open-data-v 提供多样化的数据预处理方式，例如自定义脚本和远程脚本        |
+|@open-data-v/data| 数据加载基础包  | 给open-data-v提供多样化的数据加载方式。例如HTTP、Websocket、MQTT |
+|@open-data-v/ui| 默认UI库    | 用于提供open-data-v基本的UI组件                         |
+
+大家可以通过NPM依赖的方式继承，具体参考本项目的集成方式或者参考文档 [安装章节](/tutorial/Install)
 ## 👁️ 预览
 
 ### 🤿 页面编辑
