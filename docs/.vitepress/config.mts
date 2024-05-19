@@ -20,7 +20,8 @@ export default defineConfig({
       {
         text: '快速开始',
         items: [
-          { text: '快速开始', link: '/tutorial/QuickStart' },
+          { text: '安装', link: '/tutorial/Install' },
+          { text: '使用', link: '/tutorial/QuickStart' },
           { text: '开发', link: '/tutorial/Development' },
           { text: '数据', link: '/tutorial/Data' },
           { text: '问题', link: '/tutorial/CommonIssues' },

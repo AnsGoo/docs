@@ -27,65 +27,138 @@
 
 一个完整的组件又以下属性构成
 
-> - `componentName`：组件名
+```typescript
+import manifest from './manifest.json'
+
+export default {
+  panel: () => import('./panel'),
+  component: () => import('./StaticText.vue'),
+  manifest
+}
+
+```
+
+> - `manifest`：组件的元数据
 > - `component`： 组件对象渲染模板
-> - `config`：组件配置项对象
-> - `docs`：组件说明文档
+> - `panel`：组件的属性配置面板，建议异步加载
 
 ## 组件名
 
 组件名必须保证全局唯一，因为组件会被挂载到`Vue3`实例对象上
 
-## 组件配置项对象
+## 组件元数据
 
-配置项对象是继承了 `CustomComponent` 抽象类的子类，在这里我们以静态文本为例
+组件元数据是一个`manifest.json`文件，在这里我们以静态文本为例
+
+```json
+{
+  "name": "StaticText",
+  "title": "静态文本",
+  "category": "TEXT",
+  "size": {
+    "width": 150,
+    "height": 20
+  },
+  "dataMode": "SELF"
+}
+
+
+```
+各个属性含义
+
+> - `name`: 组件名
+> - `category`: 组件分类
+> - `title`: 组件label
+> - `size`: 组件初始化大小
+> - `dataMode`: 数据接入方式，详见数据接入介绍
+
+## 组件的配置面板
 
 ```typescript
+import { FormType } from '@open-data-v/base'
 
-/**
- * {component}: 组件名
- * {group}: 组件分类
- * {name}: 组件label
- * {id}: 组件ID
- * {width}: 组件初始化长度
- * {height}: 组件初始化高度
- * {icon? }: 组件图标
- * {DataMode? }: 数据接入模式
- */
-
-class StaticTextComponent extends CustomComponent {
-  constructor(id?: string, name?: string, icon?: string) {
-    super({
-      component: componentName,
-      group: ComponentGroup.TEXT,
-      name: name ? name : '静态文本',
-      id,
-      width: 150,
-      height: 20,
-      icon,
-      dataMode: DataMode.SELF
-    })
-  }
+export default {
+  style: () => [
+      {
+          label: '字体设置',
+          prop: 'font',
+          children: [
+              {
+                  prop: 'color',
+                  label: '颜色',
+                  type: FormType.COLOR,
+                  props: {
+                      defaultValue: '#1E90FF'
+                  }
+              },
+              {
+                  prop: 'fontSize',
+                  label: '字体大小',
+                  type: FormType.NUMBER,
+                  props: {
+                      defaultValue: 20,
+                      suffix: () => h('span', {}, 'px')
+                  }
+              },
+              {
+                  prop: 'fontWeight',
+                  label: '字体宽度',
+                  type: FormType.FONT_WEIGHT,
+                  props: {
+                      defaultValue: 200
+                  }
+              },
+              {
+                  prop: 'fontFamily',
+                  label: '字体',
+                  type: FormType.FONT_STYLE,
+                  props: {
+                      defaultValue: 'Arial'
+                  }
+              }
+          ]
+      }
+  ],
+  propValue: () => [
+      {
+          label: '基础配置',
+          prop: 'base',
+          children: [
+              {
+                  prop: 'type',
+                  label: '文本类型',
+                  type: FormType.SELECT,
+                  props: {
+                      defaultValue: 'text',
+                      options: [
+                          { value: 'text', label: '文本' },
+                          { value: 'symbol', label: '符号' }
+                      ]
+                  }
+              },
+              {
+                  prop: 'text',
+                  label: '自定义文本',
+                  type: FormType.TEXT,
+                  props: {
+                      defaultValue: 'OpenDataV'
+                  }
+              }
+          ]
+      }
+  ], 
+  demoLoader:() => []
 }
 
 ```
 各个属性含义
 
-> - `component`: 组件名
-> - `group`: 组件分类
-> - `name`: 组件label
-> - `id`: 组件ID
-> - `width`: 组件初始化长度
-> - `height`: 组件初始化高度
-> - `icon? `: 组件图标
-> - `DataMode? `: 数据接入模式
+> - `style`: 组件的样式配置
+> - `propValue`: 组件的属性配置
+> - `demoLoader`: 组件的示例数据加载函数，可以是一个异步IO接口返回的数据，也可以是静态数据
 
+部分组件自带示例数据，可以再组件初始化的时候展示示例数据
 
-除过需要继承`CustomComponent` 抽象类外，还需要重新定义`_prop`和`_style`属性，
-
-> - `_prop属性`:定义了组件可以更改的属性
-
-> - `_style`: 定义了组件的外在的CSS样式
 
 ## 组件渲染模板对象
 
@@ -94,7 +167,7 @@ class StaticTextComponent extends CustomComponent {
 ```typescript
 
 const props = defineProps<{
-  component: StaticTextComponent
+  component: CustomComponent
 }>()
 
 ```
@@ -359,7 +432,38 @@ const { propValue } = useProp<StaticTextType>(props.component, propValueChange)
 
 ## 数据
 
-组件配置项对象在有一个`DataMode` 数据接入模式的属性，他定义了组件可以从那里接入数据
+数据是通过`@open-data-v/data`插件包提供，插件包里面集成了以下数据接入能力
+
+- **RestDataPlugin**: 支持从自定义Rest接口加载数据
+- **StaticDataPlugin**: 支持通过页面UI输入静态数据
+- **SubDataPlugin**: 支持通过发布定义功能获取其他组件的数据
+- **WebsocketDataPlugin**: 支持通过Websocket接受实时数据
+
+### 接入
+
+```typescript
+
+import { useDataState } from '@open-data-v/designer'
+import {
+  RestDataPlugin,
+  StaticDataPlugin,
+  SubDataPlugin,
+  WebsocketDataPlugin
+} from '@open-data-v/data'
+
+const dataState = useDataState()
+
+dataState.loadPlugins([
+    RestDataPlugin,
+    StaticDataPlugin,
+    SubDataPlugin,
+    WebsocketDataPlugin
+])
+
+
+```
+
+组件元数据`manifest`z中在有一个`DataMode` 数据接入模式的属性，他定义了组件可以从那里接入数据
 
 接入模式分为三类：
 
@@ -400,6 +504,8 @@ onUnmounted( () => {
 > - `示例数据`: 示例数据无法更改，主要 用来组件的展示，不建议在生产环境下使用
 > - `静态数据`: 静态数据从后台数据库中存储的静态数据中加载
 > - `Rest数据`: 根据用户提供的`REST`接口，发起HTTP请求，获取数据
+> - `Websocket数据`: 通过Websocket方式获取数据
+> - `Sub数据`: 通过EventBus消息总线订阅数据
 
 
 ```typescript
@@ -423,7 +529,34 @@ useData(props.component, dataChange)
 
 ### GLOBAL
 
-待实现
+组件的数据加载不是通过组件自身实现的，是通过画布统一加载再分发给各个组件,全局数据插件获取到数据之后通过发布订阅讲数据发布出于，组件通过数据订阅插件，进行订阅消费
+
+哪些数据组件可以被应用再全局，取决于插件本身的`useTo`, 例如Rest 数据插件可用于`COMPONENT 组件`和`GLOBAL全局`
+
+
+```typescript
+export default {
+    type: 'REST',
+    name: '动态数据',
+    component: shallowRef(RestPane),
+    handler: RestHandler,
+    useTo: ['COMPONENT', 'GLOBAL'],
+    getDefaultOption: () => {
+        return {
+            method: RequestMethod.GET,
+            url: '/getRiskArea',
+            headers: [{ key: '', value: '', disable: false, id: uuid() }],
+            params: [{ key: '', value: '', disable: false, id: uuid() }],
+            data: [{ key: '', value: '', disable: false, id: uuid() }],
+            otherConfig: {
+                isRepeat: false,
+                interval: 1000
+            }
+        }
+    }
+}
+```
+
 
 
 # 监听组件尺寸
@@ -483,47 +616,6 @@ const resizeHandler = (entry: ResizeObserverEntry) => {
 }
 ```
 
-# 组件文档
-
-本项目主体文档采用`Markdown`编写，支持在Markdown中渲染Vue组件，为了方便文档书写，我们提供了一个工具组件`RenderComponent`,支持渲染任意组件，并提供`palyground`
-
-```vue
-<RenderComponent
-  :config="StaticTextComponent"
-  :component="StaticText"
-  :prop-value="{
-    base: {
-      text: '我们一起建设OpenDataV吧',
-      type: 'text'
-    }
-}"
-  :style="{
-  color: '#d03050',
-  fontSize: 40,
-  fontWeight: 800,
-  width: 550,
-  height: 100
-}
-"
-  title="静态文本"
-  mode="debug"
-/>
-```
-
-> - `mode`: 模式，可选项`debug`|`view`, 在`debug`下提供了`playground`功能
-> - `component`: 组件模板
-> - `config`:组件配置项类
-> - `propValue`:组件属性初始化配置项
-> - `style`:组件样式初始化配置项
-
-
-大家在撰写组件文档时需要有如下内容
-
-**1. 属性或者样式的解释**
-
-**2. 效果示例**
-
-**3. 可交互的`playground`**
 
 
 
